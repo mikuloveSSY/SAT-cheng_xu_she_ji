@@ -27,6 +27,12 @@ typedef struct SAT{
     int n;//子句数
     Clause Chead;//数据
 }SAT;
+//解答返回值
+typedef struct Result{
+    int time;
+    int ans;
+    int* bl;
+}Result;
 
 // //函数声明
 // SAT* Readcnf(char* file);

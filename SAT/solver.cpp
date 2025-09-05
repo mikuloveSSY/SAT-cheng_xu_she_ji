@@ -1,7 +1,4 @@
 #include"define.hpp"
-//记录状态
-int *bl,bnum;
-
 //复制，用深拷贝
 Clause Copy(Clause CL){
     Clause cp_clause=CL;
@@ -109,17 +106,36 @@ int AddClause(Clause &CP,int l){
 }
 
 //优化选择
-int Choose0(Clause CL){
-    return CL.next->Lhead.next->x;
-}
-int Choose1(Clause CL){
+// int Choose0(Clause CL){
+//     return CL.next->Lhead.next->x;
+// }
 
+int Choose1(Clause CL,int M){
+    int* cnt = (int*)calloc(2*M + 10, sizeof(int));
+    Clause* chead=CL.next;
+    L* lhead=NULL;
+    while(chead!=NULL){
+        lhead=chead->Lhead.next;
+        while(lhead!=NULL){
+            cnt[lhead->x+M]++;
+            lhead=lhead->next;
+        }
+        chead=chead->next;
+    }
+    int max=0,max_i=M;
+    for(int i=0;i<=2*M;i++){
+        if(max<cnt[i]){
+            max=cnt[i];
+            max_i=i;
+        }
+    }
+    free(cnt);
+    return max_i-M;
 }
-
 
 //递归函数
 //隐式回溯,因为赋值只由选择的那一个字决定后续的所有赋值,所以用全局变量各条分支也不会互相影响
-int DPLL(Clause &CL){
+int DPLL(Clause &CL,int* bl,int M,int choose){
     if(CL.next==NULL) return OK;
     Clause cp_CL;
     int chs=0;
@@ -134,11 +150,12 @@ int DPLL(Clause &CL){
             return FALSE;
         }
     }
-    chs=CL.next->Lhead.next->x;
+    if(choose==0) chs=CL.next->Lhead.next->x;
+    else if(choose==1) chs=Choose1(CL,M);
     //假设字chs为真
     cp_CL=Copy(CL);
     AddClause(cp_CL,chs);
-    if(DPLL(cp_CL)==1){
+    if(DPLL(cp_CL,bl,M,choose)==1){
         Clear(cp_CL);
         return OK;
     }
@@ -146,7 +163,7 @@ int DPLL(Clause &CL){
     cp_CL=Copy(CL);
     //回溯,尝试假设chs为假
     AddClause(cp_CL,-chs);
-    if(DPLL(cp_CL)==1){
+    if(DPLL(cp_CL,bl,M,choose)==1){
         Clear(cp_CL);
         return OK;
     }
@@ -155,36 +172,46 @@ int DPLL(Clause &CL){
 }
 
 
-//调用主函数
-int* Solve(SAT* sat){
-    bnum=sat->m;
-    bl=(int*)malloc(sizeof(int)*(sat->m+10));
-    for(int i=0;i<sat->m+10;i++){
-        bl[i]=0;
-    }
-    bl[0]=0;//记录用时
-    
-    int start=clock();
-    int ans=DPLL(sat->Chead);
-    int end=clock();
+int SaveResult(SAT* sat,Result* result,int choose){
     //处理输出文件名称
     char res_file[20];
     strcpy(res_file,sat->name);
     int t=0;
     while(res_file[t++]!='.');
+    //标记优化的结果
+    if(choose!=0){
+        t--;
+        res_file[t++]='_',res_file[t++]='0'+choose,res_file[t++]='.';
+    }
     res_file[t++]='r',res_file[t++]='e',res_file[t++]='s',res_file[t]='\0';
     //写入答案
     FILE* fp=fopen(res_file,"w");
-    if(ans==1){
+    if(fp==NULL) return 0;
+    if(result->ans==1){
         fprintf(fp,"s 1\nv ");
         for(int i=1;i<=sat->m;i++){
-            fprintf(fp,"%d ",i*bl[i]);
+            fprintf(fp,"%d ",i*result->bl[i]);
         }
     }else{
         fprintf(fp,"s -1");
     }
-    fprintf(fp,"\nt %d",end-start);
+    fprintf(fp,"\nt %dms",result->time);
+    fclose(fp);
+    return 1;
+}
 
-    bl[0]=end-start;
-    return bl;
+//调用主函数
+Result* Solve(SAT* sat,int choose){
+    Result* result=(Result*)malloc(sizeof(Result));
+    result->bl=(int*)malloc(sizeof(int)*(sat->m+10));
+    for(int i=0;i<sat->m+10;i++){
+        result->bl[i]=0;
+    }
+    result->time=0;//记录用时
+    
+    int start=clock();
+    result->ans=DPLL(sat->Chead,result->bl,sat->m,choose);
+    int end=clock();
+    result->time=end-start;
+    return result;
 }
