@@ -6,6 +6,7 @@ SAT* Readcnf(char* file){
         return NULL;
     }
     SAT *sat=(SAT*)malloc(sizeof(SAT));
+    strcpy(sat->name,file);
     //跳过注释
     char x=fgetc(fp);
     while(x=='c'){
@@ -38,7 +39,7 @@ SAT* Readcnf(char* file){
 }
 
 int Reoutput(SAT *sat){
-    FILE* fp=fopen("output.cnf","w");
+    FILE* fp=fopen("repeat.cnf","w");
     if(fp==NULL) return -1;
     fprintf(fp,"p cnf %d %d\n",sat->m,sat->n);
     Clause* h1=sat->Chead.next;

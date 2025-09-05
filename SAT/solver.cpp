@@ -113,7 +113,7 @@ int Choose0(Clause CL){
     return CL.next->Lhead.next->x;
 }
 int Choose1(Clause CL){
-    
+
 }
 
 
@@ -156,24 +156,35 @@ int DPLL(Clause &CL){
 
 
 //调用主函数
-int Solve(SAT* sat){
+int* Solve(SAT* sat){
     bnum=sat->m;
     bl=(int*)malloc(sizeof(int)*(sat->m+10));
     for(int i=0;i<sat->m+10;i++){
         bl[i]=0;
     }
-    bl[0]=sat->m;
-
-    int ans=DPLL(sat->Chead);
+    bl[0]=0;//记录用时
     
+    int start=clock();
+    int ans=DPLL(sat->Chead);
+    int end=clock();
+    //处理输出文件名称
+    char res_file[20];
+    strcpy(res_file,sat->name);
+    int t=0;
+    while(res_file[t++]!='.');
+    res_file[t++]='r',res_file[t++]='e',res_file[t++]='s',res_file[t]='\0';
+    //写入答案
+    FILE* fp=fopen(res_file,"w");
     if(ans==1){
-        for(int i=1;i<=bl[0];i++){
-            printf("%d ",i);
-            bl[i]>0?printf("TRUE\n"):printf("FALSE\n");
+        fprintf(fp,"s 1\nv ");
+        for(int i=1;i<=sat->m;i++){
+            fprintf(fp,"%d ",i*bl[i]);
         }
     }else{
-        printf("\nno ans");
+        fprintf(fp,"s -1");
     }
-    free(bl);
-    return 0;
+    fprintf(fp,"\nt %d",end-start);
+
+    bl[0]=end-start;
+    return bl;
 }

@@ -22,6 +22,7 @@ typedef struct Clause{
 }Clause;
 //定义读入的SAT结构
 typedef struct SAT{
+    char name[20];
     int m;//变元数
     int n;//子句数
     Clause Chead;//数据

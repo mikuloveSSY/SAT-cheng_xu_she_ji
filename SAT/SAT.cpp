@@ -11,16 +11,16 @@ int main(){
     SAT* sat=Readcnf(file);
     if(sat==NULL){
         printf("open error");
+        getchar();
+        getchar();
         return 0;
     }
-    int start=clock();
     //开始dpll
-    // Reoutput(sat);
-    Solve(sat);
+    int* bl=Solve(sat);
 
 
-    int end=clock();
-    printf("\ntime:%d ms",end-start);
+    printf("\ntime:%d ms",bl[0]);
+    free(bl);
     getchar();
     getchar();
     return 0;
