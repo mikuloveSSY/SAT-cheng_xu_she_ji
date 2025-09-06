@@ -1,4 +1,20 @@
 #include"define.hpp"
+
+//用于实时记录用时,便于监控
+int T=0;
+void clear_line() {
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    columns = 8;
+    printf("\r");
+    for (int i = 5; i < columns; i++){
+        printf(" ");
+    }
+    printf("\r");
+    fflush(stdout);
+}
+
 //复制，用深拷贝
 Clause Copy(Clause CL){
     Clause cp_clause=CL;
@@ -83,7 +99,7 @@ int EmptyClause(Clause CL){
         if(Cp->Lhead.next==NULL) return OK;
         Cp=Cp->next;
     }
-    return FALSE;
+    return NO;
 }
 //寻找单子句优先处理
 int FindOne(Clause CL){
@@ -92,7 +108,7 @@ int FindOne(Clause CL){
         if(Cp->Lhead.next->next==NULL) return Cp->Lhead.next->x;
         Cp=Cp->next;
     }
-    return FALSE;
+    return NO;
 }
 //加入结点
 int AddClause(Clause &CP,int l){
@@ -136,6 +152,10 @@ int Choose1(Clause CL,int M){
 //递归函数
 //隐式回溯,因为赋值只由选择的那一个字决定后续的所有赋值,所以用全局变量各条分支也不会互相影响
 int DPLL(Clause &CL,int* bl,int M,int choose){
+    //实时显示运行时间
+    clear_line();
+    printf("%d",clock()-T);
+    
     if(CL.next==NULL) return OK;
     Clause cp_CL;
     int chs=0;
@@ -147,7 +167,7 @@ int DPLL(Clause &CL,int* bl,int M,int choose){
             return OK;
         }else if(EmptyClause(CL)==1){
             Clear(cp_CL);
-            return FALSE;
+            return NO;
         }
     }
     if(choose==0) chs=CL.next->Lhead.next->x;
@@ -168,7 +188,7 @@ int DPLL(Clause &CL,int* bl,int M,int choose){
         return OK;
     }
     Clear(cp_CL);
-    return FALSE;
+    return NO;
 }
 
 
@@ -202,6 +222,7 @@ int SaveResult(SAT* sat,Result* result,int choose){
 
 //调用主函数
 Result* Solve(SAT* sat,int choose){
+    if(choose<0||choose>1) return NULL;
     Result* result=(Result*)malloc(sizeof(Result));
     result->bl=(int*)malloc(sizeof(int)*(sat->m+10));
     for(int i=0;i<sat->m+10;i++){
@@ -209,9 +230,12 @@ Result* Solve(SAT* sat,int choose){
     }
     result->time=0;//记录用时
     
-    int start=clock();
+    int start=T=clock();
+    printf("        ms");
     result->ans=DPLL(sat->Chead,result->bl,sat->m,choose);
     int end=clock();
     result->time=end-start;
+    
+    printf("\rtime:%d  ms\n",result->time);//为了与clearline函数一致
     return result;
 }

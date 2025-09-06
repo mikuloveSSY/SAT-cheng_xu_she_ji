@@ -5,10 +5,10 @@
 #include<cstring>
 #include<math.h>
 #include<time.h>
+#include<windows.h>
 
 #define OK 1;
-#define FALSE 0;
-#define ERROR -1;
+#define NO 0;
 
 //变元结构
 typedef struct L{
