@@ -153,8 +153,8 @@ int Choose1(Clause CL,int M){
 //隐式回溯,因为赋值只由选择的那一个字决定后续的所有赋值,所以用全局变量各条分支也不会互相影响
 int DPLL(Clause &CL,int* bl,int M,int choose){
     //实时显示运行时间
-    clear_line();
-    printf("%d",clock()-T);
+    // clear_line();
+    // printf("%d",clock()-T);
     
     if(CL.next==NULL) return OK;
     Clause cp_CL;

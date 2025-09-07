@@ -6,6 +6,9 @@ int Display(){
     SAT* sat=NULL;
     Result* result=NULL;
     int input=0;
+    int save=0;
+    int CoR=0;
+    
     while(input!=-1){
         printf("-----------Menu------------\n");
         printf("   1. Readcnf    2. Solvecnf\n");
@@ -43,7 +46,6 @@ int Display(){
                     }
                     //是否保存结果
                     printf("Do you want to save Result?(1/0)");
-                    int save=0;
                     scanf("%d",&save);
                     if(save){
                         int save_ok=SaveResult(sat,result,strategy);
@@ -62,13 +64,12 @@ int Display(){
             case 3:
                 //数独模块
                 printf("Create or Read?(1/0)");
-                int CoR=0;
                 scanf("%d",&CoR);
-                if(CoR!=0||CoR!=1){
-                    printf("Wrong input!");
-                    break;
+                if(CoR!=0&&CoR!=1){
+                    printf("Wrong input!\n");
+                }else{
+                    SolveSudoku(CoR);
                 }
-                SolveSudoku(CoR);
                 getchar();
                 getchar();
                 break;
@@ -78,7 +79,7 @@ int Display(){
         system("cls");
     }
     //清理内存占用
-    Clear(sat->Chead);
+    if(sat!=NULL)Clear(sat->Chead);
     free(sat);
 
     printf("Thanks for using!");
