@@ -241,6 +241,7 @@ int SolveSudoku(int CoR){
     //输出结果
     if(result->ans == 1){
         printf("Sudoku solution found:\n");
+        SaveResult(sat,result,strategy);
         int grid[9][9] = {0};
         //解析SAT解为数独网格
         for(int i=1; i<=729; i++){
