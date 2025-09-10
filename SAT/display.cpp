@@ -42,6 +42,8 @@ int Display(){
                     result=Solve(sat,strategy);
                     if(result==NULL){
                         printf("no strategy,can't solve\n");
+                        getchar();
+                        getchar();
                         break;
                     }
                     //是否保存结果
